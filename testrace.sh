@@ -7,48 +7,37 @@ Error="${Red_font}[Error]${Font_suffix}"
 echo -e "${Green_font}
 #======================================
 # Project: testrace
-# Version: 1.0
+# Version: 1.1
 # Author: nanqinlang
-# Blog:   https://www.nanqinlang.com
+# Blog:   https://sometimesnaive.org
 # Github: https://github.com/nanqinlang
-#======================================${Font_suffix}"
+#======================================
+${Font_suffix}"
 
 check_system(){
-	cat /etc/issue | grep -q -E -i "centos" && release="centos"
-	cat /etc/issue | grep -q -E -i "debian" && release="debian"
-	cat /etc/issue | grep -q -E -i "ubuntu" && release="ubuntu"
-
-	if [[ "${release}" = "debian" || "${release}" = "ubuntu" ]]; then
-		# apt-get update
-		apt-get install traceroute mtr zip -y
-
-	elif [[ "${release}" = "centos" ]]; then
-		# yum update -y
-		yum install traceroute mtr zip -y
-
+	if   [[ ! -z "`cat /etc/issue | grep -iE "debian"`" ]]; then
+		apt-get install traceroute mtr -y
+	elif [[ ! -z "`cat /etc/issue | grep -iE "ubuntu"`" ]]; then
+		apt-get install traceroute mtr -y
+	elif [[ ! -z "`cat /etc/redhat-release | grep -iE "CentOS"`" ]]; then
+		yum install traceroute mtr -y
 	else
 		echo -e "${Error} system not support!" && exit 1
-
 	fi
 }
 check_root(){
-	if [[ "`id -u`" = "0" ]]; then
-	echo -e "${Info} user is root"
-	else echo -e "${Error} must be root user" && exit 1
-	fi
+	[[ "`id -u`" != "0" ]] && echo -e "${Error} must be root user !" && exit 1
 }
 directory(){
 	[[ ! -d /home/testrace ]] && mkdir -p /home/testrace
 	cd /home/testrace
 }
 install(){
-	[[ ! -e besttrace ]] && wget https://raw.githubusercontent.com/nanqinlang/bestrace/master/bestrace.zip && unzip bestrace.zip && rm bestrace.zip
-	[[ ! -e besttrace ]] && echo -e "${Error} download failed, please check!" && exit 1
-	chmod +x *
+	[[ ! -f besttrace ]] && wget https://raw.githubusercontent.com/nanqinlang-script/testrace/master/besttrace.tar.gz && tar -zxf besttrace.tar.gz && rm besttrace.tar.gz
+	[[ ! -f besttrace ]] && echo -e "${Error} download failed, please check!" && exit 1
+	chmod -R +x /home/testrace
 }
-uninstall(){
-	rm -rf /home/testrace
-}
+
 
 
 test_single(){
@@ -61,7 +50,7 @@ test_single(){
 			echo -e "${Info} 请重新输入" && read -p "输入 ip 地址:" ip
 		done
 
-	./besttrace ${ip} | tee -a -i testrace.log 2>/dev/null
+	./besttrace ${ip} | tee -a -i /home/testrace/testrace.log 2>/dev/null
 
 	repeat_test_single
 }
@@ -111,10 +100,10 @@ node_1(){
 		done
 
 	[[ "${node}" == "1" ]] && ISP_name="上海电信(天翼云)" && ip=101.227.255.45
-	[[ "${node}" == "2" ]] && ISP_name="厦门电信CN2"	  && ip=117.28.254.129
-	[[ "${node}" == "3" ]] && ISP_name="湖北襄阳电信"	  && ip=58.51.94.106
-	[[ "${node}" == "4" ]] && ISP_name="江西南昌电信"	  && ip=182.98.238.226
-	[[ "${node}" == "5" ]] && ISP_name="广东深圳电信"	  && ip=119.147.52.35
+	[[ "${node}" == "2" ]] && ISP_name="厦门电信CN2"	     && ip=117.28.254.129
+	[[ "${node}" == "3" ]] && ISP_name="湖北襄阳电信"	     && ip=58.51.94.106
+	[[ "${node}" == "4" ]] && ISP_name="江西南昌电信"	     && ip=182.98.238.226
+	[[ "${node}" == "5" ]] && ISP_name="广东深圳电信"	     && ip=119.147.52.35
 	[[ "${node}" == "6" ]] && ISP_name="广州电信(天翼云)" && ip=14.215.116.1
 }
 node_2(){
@@ -127,7 +116,7 @@ node_2(){
 		done
 
 	[[ "${node}" == "1" ]] && ISP_name="西藏拉萨联通" && ip=221.13.70.244
-	[[ "${node}" == "2" ]] && ISP_name="重庆联通"	  && ip=113.207.32.65
+	[[ "${node}" == "2" ]] && ISP_name="重庆联通"	 && ip=113.207.32.65
 	[[ "${node}" == "3" ]] && ISP_name="河南郑州联通" && ip=61.168.23.74
 	[[ "${node}" == "4" ]] && ISP_name="安徽合肥联通" && ip=112.122.10.26
 	[[ "${node}" == "5" ]] && ISP_name="江苏南京联通" && ip=58.240.53.78
@@ -152,7 +141,7 @@ node_4(){
 }
 result_alternative(){
 	echo -e "${Info} 测试路由 到 ${ISP_name} 中 ..."
-	./besttrace ${ip} | tee -a -i testrace.log 2>/dev/null
+	./besttrace ${ip} | tee -a -i /home/testrace/testrace.log 2>/dev/null
 	echo -e "${Info} 测试路由 到 ${ISP_name} 完成 ！"
 
 	repeat_test_alternative
@@ -197,9 +186,10 @@ check_system
 check_root
 directory
 install
+cd besttrace
 
 echo -e "${Info} 选择你要使用的功能: "
-echo -e "1.选择一个节点进行测试\n2.四网路由快速测试\n3.手动输入ip进行测试"
+echo -e "1.选择一个节点进行测试\n2.四网路由快速测试\n3.手动输入 ip 进行测试"
 read -p "输入数字以选择:" function
 
 	while [[ ! "${function}" =~ ^[1-3]$ ]]
@@ -211,7 +201,7 @@ read -p "输入数字以选择:" function
 	if [[ "${function}" == "1" ]]; then
 		test_alternative
 	elif [[ "${function}" == "2" ]]; then
-		test_all | tee -a -i testrace.log 2>/dev/null
+		test_all | tee -a -i /home/testrace/testrace.log 2>/dev/null
 	else
 		test_single
 	fi
