@@ -22,4 +22,4 @@ bash testrace.sh
 it's the best to say nothing !
 
 ## according
-https://sometimesnaive.org/article/linux/bash/testrace
+https://github.com/nanqinlang-script/testrace/wiki
