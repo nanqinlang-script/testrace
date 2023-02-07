@@ -8,7 +8,7 @@ echo -e "${Green_font}
 #======================================
 # Project: testrace
 # Version: 1.2
-# Author: nanqinlang
+# Author: 小亦 henry
 # Website: https://api.isoyi.net
 # Github: https://github.com/insoyi
 #======================================
